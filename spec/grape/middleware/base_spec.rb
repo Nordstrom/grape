@@ -29,9 +29,26 @@ describe Grape::Middleware::Base do
     after { subject.call!({}) }
   end
 
-  it 'is able to access the response' do
-    subject.call({})
-    subject.response.should be_kind_of(Rack::Response)
+  context '#response' do
+    let(:blank_app) { lambda { |_| [404, { 'X-Something' => 'value' }, 'Not found.'] } }
+
+    before { subject.call({}) }
+
+    it 'should be a Rack::Response' do
+      subject.response.should be_kind_of(Rack::Response)
+    end
+
+    it 'should provide status' do
+      subject.response.status.should eql(404)
+    end
+
+    it 'should provide body' do
+      subject.response.body.should eql(['Not found.'])
+    end
+
+    it 'should provide headers' do
+      subject.response.headers.should include('X-Something')
+    end
   end
 
   context 'options' do
